@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys,getopt,datetime,codecs
+import time
 if sys.version_info[0] < 3:
     import got
 else:
@@ -22,7 +23,7 @@ def main(argv):
 		opts, args = getopt.getopt(argv, "", ("username=", "near=", "within=", "since=", "until=", "querysearch=", "toptweets", "maxtweets=", "convid=","output="))
 
 		tweetCriteria = got.manager.TweetCriteria()
-		outputFileName = "output_got.csv"
+		# outputFileName = "output_got.csv"
 
 		for opt,arg in opts:
 			if opt == '--username':
@@ -42,10 +43,10 @@ def main(argv):
 
 			elif opt == '--maxtweets':
 				tweetCriteria.maxTweets = int(arg)
-			
+
 			elif opt == '--near':
 				tweetCriteria.near = '"' + arg + '"'
-			
+
 			elif opt == '--within':
 				tweetCriteria.within = '"' + arg + '"'
 
@@ -54,26 +55,38 @@ def main(argv):
 
 			elif opt == '--output':
 				outputFileName = arg
-				
-		outputFile = codecs.open(outputFileName, "w+", "utf-8")
 
-		outputFile.write('username;date;retweets;favorites;text;geo;mentions;hashtags;id;permalink')
+		# outputFile = codecs.open(outputFileName, "w+", "utf-8")
 
-		print('Searching...\n')
+		# outputFile.write('username;date;retweets;favorites;text;geo;mentions;hashtags;id;permalink')
 
-		def receiveBuffer(tweets):
-			for t in tweets:
-				outputFile.write(('\n%s;%s;%d;%d;"%s";%s;%s;%s;"%s";%s' % (t.username, t.date.strftime("%Y-%m-%d %H:%M"), t.retweets, t.favorites, t.text, t.geo, t.mentions, t.hashtags, t.id, t.permalink)))
-			outputFile.flush()
-			print('More %d saved on file...\n' % len(tweets))
+		# print('Searching...\n')
 
-		got.manager.TweetManager.getTweets(tweetCriteria, receiveBuffer)
+		# def receiveBuffer(tweets):
+		# 	for t in tweets:
+		# 		outputFile.write(('\n%s;%s;%d;%d;"%s";%s;%s;%s;"%s";%s' % (t.username, t.date.strftime("%Y-%m-%d %H:%M"), t.retweets, t.favorites, t.text, t.geo, t.mentions, t.hashtags, t.id, t.permalink)))
+		# 	outputFile.flush()
+		# 	print('More %d saved on file...\n' % len(tweets))
+
+		try:
+			results = got.manager.TweetManager.getTweets(tweetCriteria)
+			for each_result in results:
+				print("WRITING")
+				with open('./output/abusive_hate.txt','a+') as final:
+					final.write( str(tweetCriteria.convid) +  "," + str(each_result.id)  + '\n')
+
+		except:
+			results = []
+
+		return results
 
 	except arg:
 		print('Arguments parser error, try -h' + arg)
-	finally:
-		outputFile.close()
-		print('Done. Output file generated "%s".' % outputFileName)
+
+	# finally:
+	# 	print("WTF")
+		# outputFile.close()
+		# print('Done. Output file generated "%s".' % outputFileName)
 
 if __name__ == '__main__':
 	main(sys.argv[1:])
